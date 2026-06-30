@@ -14,6 +14,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as StudentIndexRouteImport } from './routes/student.index'
 import { Route as StudentScheduleRouteImport } from './routes/student.schedule'
 import { Route as StudentResourcesRouteImport } from './routes/student.resources'
+import { Route as StudentExamPrepRouteImport } from './routes/student.exam-prep'
 import { Route as StudentCoursesRouteImport } from './routes/student.courses'
 import { Route as StudentChapterIdRouteImport } from './routes/student.chapter.$id'
 
@@ -42,6 +43,11 @@ const StudentResourcesRoute = StudentResourcesRouteImport.update({
   path: '/resources',
   getParentRoute: () => StudentRoute,
 } as any)
+const StudentExamPrepRoute = StudentExamPrepRouteImport.update({
+  id: '/exam-prep',
+  path: '/exam-prep',
+  getParentRoute: () => StudentRoute,
+} as any)
 const StudentCoursesRoute = StudentCoursesRouteImport.update({
   id: '/courses',
   path: '/courses',
@@ -57,6 +63,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/student': typeof StudentRouteWithChildren
   '/student/courses': typeof StudentCoursesRoute
+  '/student/exam-prep': typeof StudentExamPrepRoute
   '/student/resources': typeof StudentResourcesRoute
   '/student/schedule': typeof StudentScheduleRoute
   '/student/': typeof StudentIndexRoute
@@ -65,6 +72,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/student/courses': typeof StudentCoursesRoute
+  '/student/exam-prep': typeof StudentExamPrepRoute
   '/student/resources': typeof StudentResourcesRoute
   '/student/schedule': typeof StudentScheduleRoute
   '/student': typeof StudentIndexRoute
@@ -75,6 +83,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/student': typeof StudentRouteWithChildren
   '/student/courses': typeof StudentCoursesRoute
+  '/student/exam-prep': typeof StudentExamPrepRoute
   '/student/resources': typeof StudentResourcesRoute
   '/student/schedule': typeof StudentScheduleRoute
   '/student/': typeof StudentIndexRoute
@@ -86,6 +95,7 @@ export interface FileRouteTypes {
     | '/'
     | '/student'
     | '/student/courses'
+    | '/student/exam-prep'
     | '/student/resources'
     | '/student/schedule'
     | '/student/'
@@ -94,6 +104,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/student/courses'
+    | '/student/exam-prep'
     | '/student/resources'
     | '/student/schedule'
     | '/student'
@@ -103,6 +114,7 @@ export interface FileRouteTypes {
     | '/'
     | '/student'
     | '/student/courses'
+    | '/student/exam-prep'
     | '/student/resources'
     | '/student/schedule'
     | '/student/'
@@ -151,6 +163,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentResourcesRouteImport
       parentRoute: typeof StudentRoute
     }
+    '/student/exam-prep': {
+      id: '/student/exam-prep'
+      path: '/exam-prep'
+      fullPath: '/student/exam-prep'
+      preLoaderRoute: typeof StudentExamPrepRouteImport
+      parentRoute: typeof StudentRoute
+    }
     '/student/courses': {
       id: '/student/courses'
       path: '/courses'
@@ -170,6 +189,7 @@ declare module '@tanstack/react-router' {
 
 interface StudentRouteChildren {
   StudentCoursesRoute: typeof StudentCoursesRoute
+  StudentExamPrepRoute: typeof StudentExamPrepRoute
   StudentResourcesRoute: typeof StudentResourcesRoute
   StudentScheduleRoute: typeof StudentScheduleRoute
   StudentIndexRoute: typeof StudentIndexRoute
@@ -178,6 +198,7 @@ interface StudentRouteChildren {
 
 const StudentRouteChildren: StudentRouteChildren = {
   StudentCoursesRoute: StudentCoursesRoute,
+  StudentExamPrepRoute: StudentExamPrepRoute,
   StudentResourcesRoute: StudentResourcesRoute,
   StudentScheduleRoute: StudentScheduleRoute,
   StudentIndexRoute: StudentIndexRoute,
