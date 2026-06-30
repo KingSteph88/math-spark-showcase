@@ -18,6 +18,7 @@ import { Route as TeacherResourcesRouteImport } from './routes/teacher.resources
 import { Route as TeacherLiveRouteImport } from './routes/teacher.live'
 import { Route as TeacherCoursesRouteImport } from './routes/teacher.courses'
 import { Route as TeacherChaptersRouteImport } from './routes/teacher.chapters'
+import { Route as TeacherAnnouncementsRouteImport } from './routes/teacher.announcements'
 import { Route as StudentScheduleRouteImport } from './routes/student.schedule'
 import { Route as StudentResourcesRouteImport } from './routes/student.resources'
 import { Route as StudentProfileRouteImport } from './routes/student.profile'
@@ -70,6 +71,11 @@ const TeacherChaptersRoute = TeacherChaptersRouteImport.update({
   path: '/chapters',
   getParentRoute: () => TeacherRoute,
 } as any)
+const TeacherAnnouncementsRoute = TeacherAnnouncementsRouteImport.update({
+  id: '/announcements',
+  path: '/announcements',
+  getParentRoute: () => TeacherRoute,
+} as any)
 const StudentScheduleRoute = StudentScheduleRouteImport.update({
   id: '/schedule',
   path: '/schedule',
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/student/profile': typeof StudentProfileRoute
   '/student/resources': typeof StudentResourcesRoute
   '/student/schedule': typeof StudentScheduleRoute
+  '/teacher/announcements': typeof TeacherAnnouncementsRoute
   '/teacher/chapters': typeof TeacherChaptersRoute
   '/teacher/courses': typeof TeacherCoursesRoute
   '/teacher/live': typeof TeacherLiveRoute
@@ -125,6 +132,7 @@ export interface FileRoutesByTo {
   '/student/profile': typeof StudentProfileRoute
   '/student/resources': typeof StudentResourcesRoute
   '/student/schedule': typeof StudentScheduleRoute
+  '/teacher/announcements': typeof TeacherAnnouncementsRoute
   '/teacher/chapters': typeof TeacherChaptersRoute
   '/teacher/courses': typeof TeacherCoursesRoute
   '/teacher/live': typeof TeacherLiveRoute
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/student/profile': typeof StudentProfileRoute
   '/student/resources': typeof StudentResourcesRoute
   '/student/schedule': typeof StudentScheduleRoute
+  '/teacher/announcements': typeof TeacherAnnouncementsRoute
   '/teacher/chapters': typeof TeacherChaptersRoute
   '/teacher/courses': typeof TeacherCoursesRoute
   '/teacher/live': typeof TeacherLiveRoute
@@ -162,6 +171,7 @@ export interface FileRouteTypes {
     | '/student/profile'
     | '/student/resources'
     | '/student/schedule'
+    | '/teacher/announcements'
     | '/teacher/chapters'
     | '/teacher/courses'
     | '/teacher/live'
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/student/profile'
     | '/student/resources'
     | '/student/schedule'
+    | '/teacher/announcements'
     | '/teacher/chapters'
     | '/teacher/courses'
     | '/teacher/live'
@@ -194,6 +205,7 @@ export interface FileRouteTypes {
     | '/student/profile'
     | '/student/resources'
     | '/student/schedule'
+    | '/teacher/announcements'
     | '/teacher/chapters'
     | '/teacher/courses'
     | '/teacher/live'
@@ -274,6 +286,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TeacherChaptersRouteImport
       parentRoute: typeof TeacherRoute
     }
+    '/teacher/announcements': {
+      id: '/teacher/announcements'
+      path: '/announcements'
+      fullPath: '/teacher/announcements'
+      preLoaderRoute: typeof TeacherAnnouncementsRouteImport
+      parentRoute: typeof TeacherRoute
+    }
     '/student/schedule': {
       id: '/student/schedule'
       path: '/schedule'
@@ -343,6 +362,7 @@ const StudentRouteWithChildren =
   StudentRoute._addFileChildren(StudentRouteChildren)
 
 interface TeacherRouteChildren {
+  TeacherAnnouncementsRoute: typeof TeacherAnnouncementsRoute
   TeacherChaptersRoute: typeof TeacherChaptersRoute
   TeacherCoursesRoute: typeof TeacherCoursesRoute
   TeacherLiveRoute: typeof TeacherLiveRoute
@@ -351,6 +371,7 @@ interface TeacherRouteChildren {
 }
 
 const TeacherRouteChildren: TeacherRouteChildren = {
+  TeacherAnnouncementsRoute: TeacherAnnouncementsRoute,
   TeacherChaptersRoute: TeacherChaptersRoute,
   TeacherCoursesRoute: TeacherCoursesRoute,
   TeacherLiveRoute: TeacherLiveRoute,
