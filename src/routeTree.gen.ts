@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TeacherRouteImport } from './routes/teacher'
 import { Route as StudentRouteImport } from './routes/student'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as StudentIndexRouteImport } from './routes/student.index'
@@ -19,6 +20,11 @@ import { Route as StudentExamPrepRouteImport } from './routes/student.exam-prep'
 import { Route as StudentCoursesRouteImport } from './routes/student.courses'
 import { Route as StudentChapterIdRouteImport } from './routes/student.chapter.$id'
 
+const TeacherRoute = TeacherRouteImport.update({
+  id: '/teacher',
+  path: '/teacher',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StudentRoute = StudentRouteImport.update({
   id: '/student',
   path: '/student',
@@ -68,6 +74,7 @@ const StudentChapterIdRoute = StudentChapterIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/student': typeof StudentRouteWithChildren
+  '/teacher': typeof TeacherRoute
   '/student/courses': typeof StudentCoursesRoute
   '/student/exam-prep': typeof StudentExamPrepRoute
   '/student/profile': typeof StudentProfileRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/teacher': typeof TeacherRoute
   '/student/courses': typeof StudentCoursesRoute
   '/student/exam-prep': typeof StudentExamPrepRoute
   '/student/profile': typeof StudentProfileRoute
@@ -90,6 +98,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/student': typeof StudentRouteWithChildren
+  '/teacher': typeof TeacherRoute
   '/student/courses': typeof StudentCoursesRoute
   '/student/exam-prep': typeof StudentExamPrepRoute
   '/student/profile': typeof StudentProfileRoute
@@ -103,6 +112,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/student'
+    | '/teacher'
     | '/student/courses'
     | '/student/exam-prep'
     | '/student/profile'
@@ -113,6 +123,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/teacher'
     | '/student/courses'
     | '/student/exam-prep'
     | '/student/profile'
@@ -124,6 +135,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/student'
+    | '/teacher'
     | '/student/courses'
     | '/student/exam-prep'
     | '/student/profile'
@@ -136,10 +148,18 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   StudentRoute: typeof StudentRouteWithChildren
+  TeacherRoute: typeof TeacherRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/teacher': {
+      id: '/teacher'
+      path: '/teacher'
+      fullPath: '/teacher'
+      preLoaderRoute: typeof TeacherRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/student': {
       id: '/student'
       path: '/student'
@@ -232,6 +252,7 @@ const StudentRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   StudentRoute: StudentRouteWithChildren,
+  TeacherRoute: TeacherRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
