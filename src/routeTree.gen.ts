@@ -14,6 +14,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as StudentIndexRouteImport } from './routes/student.index'
 import { Route as StudentScheduleRouteImport } from './routes/student.schedule'
 import { Route as StudentResourcesRouteImport } from './routes/student.resources'
+import { Route as StudentProfileRouteImport } from './routes/student.profile'
 import { Route as StudentExamPrepRouteImport } from './routes/student.exam-prep'
 import { Route as StudentCoursesRouteImport } from './routes/student.courses'
 import { Route as StudentChapterIdRouteImport } from './routes/student.chapter.$id'
@@ -43,6 +44,11 @@ const StudentResourcesRoute = StudentResourcesRouteImport.update({
   path: '/resources',
   getParentRoute: () => StudentRoute,
 } as any)
+const StudentProfileRoute = StudentProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => StudentRoute,
+} as any)
 const StudentExamPrepRoute = StudentExamPrepRouteImport.update({
   id: '/exam-prep',
   path: '/exam-prep',
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/student': typeof StudentRouteWithChildren
   '/student/courses': typeof StudentCoursesRoute
   '/student/exam-prep': typeof StudentExamPrepRoute
+  '/student/profile': typeof StudentProfileRoute
   '/student/resources': typeof StudentResourcesRoute
   '/student/schedule': typeof StudentScheduleRoute
   '/student/': typeof StudentIndexRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/student/courses': typeof StudentCoursesRoute
   '/student/exam-prep': typeof StudentExamPrepRoute
+  '/student/profile': typeof StudentProfileRoute
   '/student/resources': typeof StudentResourcesRoute
   '/student/schedule': typeof StudentScheduleRoute
   '/student': typeof StudentIndexRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/student': typeof StudentRouteWithChildren
   '/student/courses': typeof StudentCoursesRoute
   '/student/exam-prep': typeof StudentExamPrepRoute
+  '/student/profile': typeof StudentProfileRoute
   '/student/resources': typeof StudentResourcesRoute
   '/student/schedule': typeof StudentScheduleRoute
   '/student/': typeof StudentIndexRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/student'
     | '/student/courses'
     | '/student/exam-prep'
+    | '/student/profile'
     | '/student/resources'
     | '/student/schedule'
     | '/student/'
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
     | '/'
     | '/student/courses'
     | '/student/exam-prep'
+    | '/student/profile'
     | '/student/resources'
     | '/student/schedule'
     | '/student'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '/student'
     | '/student/courses'
     | '/student/exam-prep'
+    | '/student/profile'
     | '/student/resources'
     | '/student/schedule'
     | '/student/'
@@ -163,6 +175,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudentResourcesRouteImport
       parentRoute: typeof StudentRoute
     }
+    '/student/profile': {
+      id: '/student/profile'
+      path: '/profile'
+      fullPath: '/student/profile'
+      preLoaderRoute: typeof StudentProfileRouteImport
+      parentRoute: typeof StudentRoute
+    }
     '/student/exam-prep': {
       id: '/student/exam-prep'
       path: '/exam-prep'
@@ -190,6 +209,7 @@ declare module '@tanstack/react-router' {
 interface StudentRouteChildren {
   StudentCoursesRoute: typeof StudentCoursesRoute
   StudentExamPrepRoute: typeof StudentExamPrepRoute
+  StudentProfileRoute: typeof StudentProfileRoute
   StudentResourcesRoute: typeof StudentResourcesRoute
   StudentScheduleRoute: typeof StudentScheduleRoute
   StudentIndexRoute: typeof StudentIndexRoute
@@ -199,6 +219,7 @@ interface StudentRouteChildren {
 const StudentRouteChildren: StudentRouteChildren = {
   StudentCoursesRoute: StudentCoursesRoute,
   StudentExamPrepRoute: StudentExamPrepRoute,
+  StudentProfileRoute: StudentProfileRoute,
   StudentResourcesRoute: StudentResourcesRoute,
   StudentScheduleRoute: StudentScheduleRoute,
   StudentIndexRoute: StudentIndexRoute,
