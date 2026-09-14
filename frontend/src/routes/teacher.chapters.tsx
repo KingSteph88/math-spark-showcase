@@ -1,34 +1,71 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { allSemesters } from "@/lib/curriculum";
-import { Edit, FileText } from "lucide-react";
+import { FileText, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { teacherApi } from "@/lib/teacherApi";
 
 export const Route = createFileRoute("/teacher/chapters")({
   component: Chapters,
 });
 
+type Chapter = { _id: string; title: string; description?: string; isPublished: boolean };
+type CourseWithChapters = { _id: string; title: string; chapters: Chapter[] };
+
 function Chapters() {
-  const all = allSemesters.flatMap((s) => s.subjects.flatMap((sub) => sub.chapters.map((c) => ({ ...c, subject: sub.name }))));
+  const [data, setData] = useState<CourseWithChapters[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const coursesRes = await teacherApi.get("/teacher/courses");
+        const detailed = await Promise.all(
+          coursesRes.data.map(async (c: any) => {
+            const detail = await teacherApi.get(`/teacher/courses/${c._id}`);
+            return { _id: c._id, title: c.title, chapters: detail.data.chapters };
+          })
+        );
+        setData(detailed);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center p-10">
+        <Loader2 className="animate-spin" />
+      </div>
+    );
+  }
+
+  const allChapters = data.flatMap((c) => c.chapters.map((ch) => ({ ...ch, courseTitle: c.title })));
+
   return (
     <div className="space-y-8 max-w-6xl">
       <div>
         <h1 className="text-4xl font-bold">Chapters</h1>
-        <p className="mt-2 text-muted-foreground">All {all.length} chapters across both semesters.</p>
+        <p className="mt-2 text-muted-foreground">All {allChapters.length} chapters across every course.</p>
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {all.map((c) => (
-          <div key={c.id} className="glass-card rounded-2xl p-5 hover-lift">
-            <div className="flex items-start justify-between">
-              <div className="size-10 rounded-xl bg-warm-gradient text-white grid place-items-center font-display font-bold">{c.n}</div>
-              <button className="rounded-full p-2 hover:bg-white transition"><Edit className="size-4 text-muted-foreground" /></button>
-            </div>
-            <div className="text-xs text-coral font-medium mt-3 uppercase tracking-wider">{c.subject}</div>
+        {allChapters.map((c) => (
+          <div key={c._id} className="glass-card rounded-2xl p-5 hover-lift">
+            <div className="text-xs text-coral font-medium uppercase tracking-wider">{c.courseTitle}</div>
             <div className="font-display font-semibold mt-1">{c.title}</div>
-            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{c.desc}</p>
-            <button className="mt-4 w-full rounded-full glass-panel py-2 text-sm font-medium inline-flex items-center justify-center gap-2 hover:bg-white transition">
-              <FileText className="size-4" /> Manage files
-            </button>
+            {c.description && <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{c.description}</p>}
+            <div className="mt-4 text-xs text-muted-foreground inline-flex items-center gap-2">
+              <FileText className="size-3.5" /> {c.isPublished ? "Published" : "Draft"}
+            </div>
           </div>
         ))}
+        {allChapters.length === 0 && (
+          <div className="col-span-full glass-card rounded-3xl p-10 text-center text-muted-foreground">
+            No chapters yet — add courses and chapters from the Courses page.
+          </div>
+        )}
       </div>
     </div>
   );

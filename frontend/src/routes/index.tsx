@@ -32,6 +32,49 @@ const stats = [
   { value: "PDF", label: "Resources", icon: FileText },
 ];
 
+const packs = [
+  {
+    id: "Algebra-only",
+    title: "Starter Pack",
+    price: "40 TND",
+    description:
+      "Perfect for students who want structured revision.",
+    features: [
+      "Algebra lessons",
+      "PDF summaries",
+      "Exercise corrections",
+    ],
+    popular: false,
+  },
+  {
+    id: "Analysis-only",
+    title: "Starter Pack",
+    price: "40 TND",
+    description:
+      "Perfect for students who want structured revision.",
+    features: [
+      "Analysis lessons",
+      "PDF summaries",
+      "Exercise corrections",
+    ],
+    popular: false,
+  },
+  {
+    id: "algebra-analysis-combo",
+    title: "Premium Pack",
+    price: "70 TND",
+    description:
+      "Complete preparation with live support.",
+    features: [
+      "Everything in Starter",
+      "Weekly live sessions",
+      "Recorded lessons",
+      "Priority support",
+    ],
+    popular: true,
+  },
+];
+
 function Landing() {
   return (
     <div className="min-h-screen bg-hero-aura">
@@ -45,11 +88,10 @@ function Landing() {
             <span className="font-display font-semibold text-lg">Mathéa</span>
           </Link>
           <div className="hidden md:flex items-center gap-1 text-sm font-medium text-muted-foreground">
-            <a href="#features" className="px-4 py-2 rounded-full hover:bg-white/60 hover:text-foreground transition">Features</a>
+            <a href="#packs" className="px-4 py-2 rounded-full hover:bg-white/60 hover:text-foreground transition">Packs</a>
             <a href="#stats" className="px-4 py-2 rounded-full hover:bg-white/60 hover:text-foreground transition">Platform</a>
-            {/* <Link to="/teacher" className="px-4 py-2 rounded-full hover:bg-white/60 hover:text-foreground transition">Teacher</Link> */}
           </div>
-          <Link to="/student" className="rounded-full bg-warm-gradient text-white text-sm font-medium px-5 py-2.5 shadow-soft hover:opacity-90 transition">
+          <Link to="/register" className="rounded-full bg-warm-gradient text-white text-sm font-medium px-5 py-2.5 shadow-soft hover:opacity-90 transition">
             Student Portal
           </Link>
         </nav>
@@ -125,29 +167,150 @@ function Landing() {
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="mx-auto max-w-7xl px-6 py-20">
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <h2 className="text-4xl font-bold">A premium learning experience</h2>
-          <p className="mt-3 text-muted-foreground">Everything a first-year student needs — beautifully organized.</p>
+      {/* packs */}
+      <section
+  id="packs"
+  className="mx-auto max-w-7xl px-6 py-20"
+>
+  <div className="text-center max-w-2xl mx-auto mb-12">
+    <h2 className="text-4xl font-bold">
+      Choose your learning pack
+    </h2>
+
+    <p className="mt-3 text-muted-foreground">
+      Select the plan that fits your learning goals.
+    </p>
+  </div>
+
+
+  <div className="grid md:grid-cols-2 gap-8">
+
+    {packs.map((pack) => (
+
+      <div
+        key={pack.id}
+        className={`
+          glass-card rounded-[2rem] p-8 hover-lift
+          ${
+            pack.popular
+              ? "ring-2 ring-orange-300"
+              : ""
+          }
+        `}
+      >
+
+        {
+          pack.popular && (
+            <div className="
+              inline-flex
+              px-3 py-1
+              rounded-full
+              bg-warm-gradient
+              text-white
+              text-xs
+              mb-4
+            ">
+              Most Popular
+            </div>
+          )
+        }
+
+
+        <h3 className="
+          text-3xl
+          font-display
+          font-semibold
+        ">
+          {pack.title}
+        </h3>
+
+
+        <div className="
+          text-4xl
+          font-bold
+          mt-4
+        ">
+          {pack.price}
         </div>
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="glass-card rounded-3xl p-8 hover-lift">
-            <h3 className="text-2xl font-display font-semibold mb-2">For Students</h3>
-            <p className="text-muted-foreground mb-6">Structured chapters, recorded lessons, exercises and live sessions — all in one calm space.</p>
-            <Link to="/student" className="inline-flex items-center gap-1 text-coral font-medium">
-              Open student portal <ArrowRight className="size-4" />
-            </Link>
-          </div>
-          {/* <div className="glass-card rounded-3xl p-8 hover-lift">
-            <h3 className="text-2xl font-display font-semibold mb-2">For Teachers</h3>
-            <p className="text-muted-foreground mb-6">Manage courses, upload resources, schedule live sessions and reach your students effortlessly.</p>
-            <Link to="/teacher" className="inline-flex items-center gap-1 text-coral font-medium">
-              Open teacher studio <ArrowRight className="size-4" />
-            </Link>
-          </div> */}
-        </div>
-      </section>
+
+
+        <p className="
+          mt-3
+          text-muted-foreground
+        ">
+          {pack.description}
+        </p>
+
+
+        <ul className="mt-6 space-y-3">
+
+          {pack.features.map((feature)=>(
+            <li
+              key={feature}
+              className="
+                flex
+                items-center
+                gap-2
+                text-sm
+              "
+            >
+
+              <Sparkles
+                className="
+                  size-4
+                  text-coral
+                "
+              />
+
+              {feature}
+
+            </li>
+          ))}
+
+        </ul>
+
+
+        <Link
+
+          to="/register"
+
+          search={{
+            plan: pack.id
+          }}
+
+          className="
+            mt-8
+            inline-flex
+            items-center
+            justify-center
+            gap-2
+            w-full
+            rounded-full
+            bg-warm-gradient
+            text-white
+            px-6
+            py-3
+            font-medium
+            shadow-glow
+            hover:opacity-95
+            transition
+          "
+        >
+
+          Choose this pack
+
+          <ArrowRight className="size-4"/>
+
+        </Link>
+
+
+      </div>
+
+    ))}
+
+  </div>
+
+</section>
 
       <SiteFooter />
     </div>

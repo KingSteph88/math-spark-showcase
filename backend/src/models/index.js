@@ -1,0 +1,18 @@
+module.exports = {
+  User: require('./User'),
+  Teacher: require('./Teacher'),
+  PaymentPlan: require('./PaymentPlan'),
+  Payment: require('./Payment'),
+  Course: require('./Course'),
+  Chapter: require('./Chapter'),
+  Lesson: require('./Lesson'),
+  Resource: require('./Resource'),
+  Progress: require('./Progress'),
+  AvailabilityTemplate: require('./AvailabilityTemplate'),
+  AvailabilitySlot: require('./AvailabilitySlot'),
+  BlockedDate: require('./BlockedDate'),
+  Booking: require('./Booking'),
+  LiveSession: require('./LiveSession'),
+  Announcement: require('./Announcement'),
+  RefreshToken: require('./RefreshToken'),
+};
