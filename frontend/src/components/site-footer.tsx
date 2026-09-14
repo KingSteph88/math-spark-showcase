@@ -14,7 +14,7 @@ export function SiteFooter() {
         <p className="text-sm text-muted-foreground">© 2026 Mathéa — Learn mathematics, beautifully.</p>
         <div className="flex gap-6 text-sm text-muted-foreground">
           <Link to="/student" className="hover:text-foreground transition">Student</Link>
-          {/* <Link to="/teacher" className="hover:text-foreground transition">Teacher</Link> */}
+          <Link to="/teacher-login" className="hover:text-foreground transition">Teacher Login</Link>
         </div>
       </div>
     </footer>
