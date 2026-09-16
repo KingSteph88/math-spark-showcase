@@ -1,34 +1,27 @@
-const { LiveSession } = require('../models');
-
 /**
- * Upcoming live sessions visible to a given student: either open to
- * everyone, or specifically targeted at them.
+ * The student "Schedule" page is now private 1:1 appointment booking with
+ * the teacher. Group live sessions moved to Exam Preparation — see
+ * studentExamPrepService.upcomingLiveSessions.
+ *
+ * The actual mechanics live in bookingService; this module is the thin
+ * student-facing view over it.
  */
-async function upcomingSessions(userId) {
-  const sessions = await LiveSession.find({
-    status: { $in: ['scheduled', 'ongoing'] },
-    scheduledAt: { $gte: new Date(Date.now() - 60 * 60 * 1000) }, // include sessions started <1h ago
-    $or: [{ targetAudience: 'all' }, { targetStudentIds: userId }],
-  })
-    .sort({ scheduledAt: 1 })
-    .populate({ path: 'teacherId', select: 'firstName lastName' })
-    .populate({ path: 'courseId', select: 'title' })
-    .lean();
+const bookingService = require('./bookingService');
 
-  return sessions.map((s) => ({
-    id: s._id,
-    title: s.title,
-    description: s.description,
-    scheduledAt: s.scheduledAt,
-    durationMinutes: s.durationMinutes,
-    platform: s.platform,
-    meetingLink: s.meetingLink,
-    status: s.status,
-    teacher: s.teacherId
-      ? { firstName: s.teacherId.firstName, lastName: s.teacherId.lastName }
-      : null,
-    course: s.courseId ? { id: s.courseId._id, title: s.courseId.title } : null,
-  }));
+async function availableSlots(query = {}) {
+  return bookingService.listOpenSlots(query);
 }
 
-module.exports = { upcomingSessions };
+async function myBookings(studentId, query = {}) {
+  return bookingService.listStudentBookings(studentId, query);
+}
+
+async function requestSlot(studentId, slotId, { studentNote } = {}) {
+  return bookingService.requestBooking(studentId, slotId, { studentNote });
+}
+
+async function cancelBooking(studentId, bookingId) {
+  return bookingService.cancelBooking('student', studentId, bookingId);
+}
+
+module.exports = { availableSlots, myBookings, requestSlot, cancelBooking };

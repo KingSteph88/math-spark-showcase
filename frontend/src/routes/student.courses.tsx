@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
@@ -32,8 +32,16 @@ const HUES = [
   "from-amber-300/60 to-rose-300/60",
   "from-fuchsia-300/60 to-orange-300/60",
 ];
-
 function Courses() {
+  const location = useLocation();
+
+  if (location.pathname !== "/student/courses") {
+    return <Outlet />;
+  }
+
+  return <CoursesList />;
+}
+function CoursesList() {
   const [courses, setCourses] = useState<CourseSummary[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
