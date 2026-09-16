@@ -24,7 +24,8 @@ function buildApp() {
   app.register(cors, {
     origin: [
       "http://localhost:8081",
-      "http://localhost:5173"
+      "http://localhost:5173",
+      "https://mathea-xp9s.onrender.com"
     ],
     methods: [
       'GET',
