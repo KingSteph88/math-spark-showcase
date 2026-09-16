@@ -15,11 +15,28 @@ export const Route = createFileRoute("/student/courses/$courseId/chapters/$chapt
   component: ChapterPage,
 });
 
+/**
+ * Lessons are hosted on YouTube. The backend stores the extracted id, but
+ * fall back to parsing the URL so lessons saved before that field existed
+ * still play inline instead of dropping back to a click-out link.
+ */
+function youtubeIdOf(lesson?: Lesson | null): string | null {
+  if (!lesson) return null;
+  if (lesson.youtubeVideoId) return lesson.youtubeVideoId;
+
+  const match = lesson.videoUrl?.match(
+    /(?:youtu\.be\/|v=|\/embed\/|\/shorts\/|\/live\/|\/v\/)([A-Za-z0-9_-]{11})/
+  );
+
+  return match ? match[1] : null;
+}
+
 type Lesson = {
   id: string;
   title: string;
   description?: string;
   videoUrl?: string;
+  youtubeVideoId?: string | null;
   videoDurationSeconds?: number;
   completed: boolean;
   watchTimeSeconds: number;
@@ -155,23 +172,34 @@ function ChapterPage() {
         {/* Video + lesson list */}
         <div className="lg:col-span-2 space-y-4">
           <div className="glass-card rounded-3xl p-6 hover-lift">
-            <div className="aspect-video rounded-2xl bg-gradient-to-br from-orange-200 via-pink-200 to-purple-200 grid place-items-center relative overflow-hidden">
-              <div className="absolute inset-0 bg-black/5" />
-              {activeLesson?.videoUrl ? (
-                <a
-                  href={activeLesson.videoUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="relative size-20 rounded-full glass-panel grid place-items-center shadow-glow hover:scale-105 transition"
-                >
-                  <Play className="size-8 text-coral fill-coral ml-1" />
-                </a>
-              ) : (
-                <div className="relative size-20 rounded-full glass-panel grid place-items-center opacity-60">
-                  <Play className="size-8 text-coral fill-coral ml-1" />
+            {(() => {
+              const videoId = youtubeIdOf(activeLesson);
+
+              if (videoId) {
+                return (
+                  <div className="aspect-video rounded-2xl overflow-hidden bg-black shadow-soft">
+                    <iframe
+                      key={videoId}
+                      src={`https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1`}
+                      title={activeLesson?.title ?? "Lesson video"}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      className="w-full h-full border-0"
+                    />
+                  </div>
+                );
+              }
+
+              return (
+                <div className="aspect-video rounded-2xl bg-gradient-to-br from-orange-200 via-pink-200 to-purple-200 grid place-items-center relative overflow-hidden">
+                  <div className="absolute inset-0 bg-black/5" />
+                  <div className="relative size-20 rounded-full glass-panel grid place-items-center opacity-60">
+                    <Play className="size-8 text-coral fill-coral ml-1" />
+                  </div>
                 </div>
-              )}
-            </div>
+              );
+            })()}
             <div className="mt-5 flex items-center justify-between gap-4">
               <div>
                 <div className="font-display font-semibold text-lg">

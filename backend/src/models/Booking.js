@@ -23,7 +23,7 @@ const bookingSchema = new Schema(
   {
     studentId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     teacherId: { type: Schema.Types.ObjectId, ref: 'Teacher', required: true, index: true },
-    slotId: { type: Schema.Types.ObjectId, ref: 'AvailabilitySlot', required: true, unique: true },
+    slotId: { type: Schema.Types.ObjectId, ref: 'AvailabilitySlot', required: true, index: true },
 
     status: {
       type: String,
@@ -44,6 +44,16 @@ const bookingSchema = new Schema(
   { timestamps: true }
 );
 
+// A slot can only have ONE live booking at a time, but a declined or
+// cancelled booking must not block the slot from being requested again —
+// hence a partial unique index rather than `unique: true` on the field.
+bookingSchema.index(
+  { slotId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { status: { $in: ['pending', 'accepted'] } },
+  }
+);
 bookingSchema.index({ teacherId: 1, status: 1 });
 bookingSchema.index({ studentId: 1, status: 1 });
 

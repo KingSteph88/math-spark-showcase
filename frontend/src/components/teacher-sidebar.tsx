@@ -1,8 +1,9 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   GraduationCap, LayoutDashboard, BookOpen, Layers, FileText,
-  Radio, Megaphone, Users, LogOut,
+  Radio, Megaphone, Users, LogOut, CalendarClock,
 } from "lucide-react";
+import { clearSession } from "@/lib/api";
 
 const items = [
   { to: "/teacher", label: "Dashboard", icon: LayoutDashboard },
@@ -10,6 +11,7 @@ const items = [
   { to: "/teacher/chapters", label: "Chapters", icon: Layers },
   { to: "/teacher/resources", label: "Resources", icon: FileText },
   { to: "/teacher/live", label: "Live Sessions", icon: Radio },
+  { to: "/teacher/scheduling", label: "Scheduling", icon: CalendarClock },
   { to: "/teacher/announcements", label: "Announcements", icon: Megaphone },
   { to: "/teacher/students", label: "Students", icon: Users },
 ] as const;
@@ -19,10 +21,8 @@ export function TeacherSidebar() {
   const navigate = useNavigate();
 
   function handleLogout() {
-    localStorage.removeItem("teacherAccessToken");
-    localStorage.removeItem("teacherRefreshToken");
-    localStorage.removeItem("teacherUser");
-    navigate({ to: "/teacher-login" });
+    clearSession();
+    navigate({ to: "/login" });
   }
 
   return (

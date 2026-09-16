@@ -5,7 +5,11 @@ const {
   Resource,
   Progress,
 } = require('../models');
-const { getSubjectAccess, courseFilterForAccess } = require('./subjectAccessService');
+const {
+  getSubjectAccess,
+  courseFilterForAccess,
+  canAccessSubject,
+} = require('./subjectAccessService');
 
 function httpError(message, statusCode) {
   const err = new Error(message);
@@ -113,7 +117,7 @@ async function getChapterDetail(userId, courseId, chapterId) {
     throw httpError('Chapter not found.', 404);
   }
 
-  if (subjectAccess !== 'both' && chapter.courseId.subject !== subjectAccess) {
+  if (!canAccessSubject(subjectAccess, chapter.courseId.subject)) {
     throw httpError(
       'Your current plan does not include access to this course.',
       403
@@ -153,6 +157,7 @@ async function getChapterDetail(userId, courseId, chapterId) {
         title: lesson.title,
         description: lesson.description,
         videoUrl: lesson.videoUrl,
+        youtubeVideoId: lesson.youtubeVideoId || null,
         videoDurationSeconds: lesson.videoDurationSeconds,
         completed: p?.completed || false,
         watchTimeSeconds: p?.watchTimeSeconds || 0,
@@ -184,7 +189,7 @@ async function updateLessonProgress(userId, lessonId, { completed, watchTimeSeco
 
   const subjectAccess = await getSubjectAccess(userId);
 
-  if (subjectAccess !== 'both' && lesson.courseId.subject !== subjectAccess) {
+  if (!canAccessSubject(subjectAccess, lesson.courseId.subject)) {
     throw httpError(
       'Your current plan does not include access to this course.',
       403

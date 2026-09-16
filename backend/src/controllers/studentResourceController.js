@@ -7,7 +7,7 @@ function httpError(message, statusCode) {
 }
 
 async function listCategories(request, reply) {
-  const data = await service.listCategorySummaries();
+  const data = await service.listCategorySummaries(request.user.id);
   return reply.send(data);
 }
 
@@ -18,7 +18,7 @@ async function listByCategory(request, reply) {
     throw httpError('Unknown resource category.', 400);
   }
 
-  const data = await service.listByCategory(category, {
+  const data = await service.listByCategory(request.user.id, category, {
     courseId: request.query.courseId,
   });
 
@@ -26,8 +26,11 @@ async function listByCategory(request, reply) {
 }
 
 async function download(request, reply) {
-  await service.registerDownload(request.params.resourceId);
-  return reply.code(204).send();
+  const { fileUrl } = await service.registerDownload(
+    request.user.id,
+    request.params.resourceId
+  );
+  return reply.send({ fileUrl });
 }
 
 module.exports = {

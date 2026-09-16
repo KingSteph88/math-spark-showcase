@@ -13,6 +13,8 @@ import {
 
 import { useState } from "react";
 
+import { api, saveSession } from "@/lib/api";
+
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -67,73 +69,44 @@ function LoginPage() {
     try {
 
 
-      const response = await fetch(
-        "http://localhost:5000/auth/login",
-        {
-          method:"POST",
-
-          headers:{
-            "Content-Type":"application/json",
-          },
-
-          body:JSON.stringify(form),
-        }
-      );
-
-
-
-      const data = await response.json();
-
-
-
-      if(!response.ok){
-
-        throw new Error(
-          data.message ||
-          data.error ||
-          "Login failed"
-        );
-
-      }
-
-
-
       /*
-        Store authentication data
+        One login for the whole platform. The backend looks the address
+        up in the teacher collection first and tells us which kind of
+        account it is, so there is no separate teacher login any more.
       */
 
-      localStorage.setItem(
-        "accessToken",
-        data.accessToken
+      const { data } = await api.post(
+        "/auth/login",
+        form
       );
 
 
-      localStorage.setItem(
-        "refreshToken",
-        data.refreshToken
-      );
+      saveSession({
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+        accountType: data.accountType,
+        user: data.user,
+      });
 
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify(data.user)
-      );
-
+      const isTeacher =
+        data.accountType === "teacher";
 
 
       setSuccess(
-        "Login successful. Welcome back!"
+        isTeacher
+          ? "Login successful. Opening Teacher Studio…"
+          : "Login successful. Welcome back!"
       );
-
 
 
       setTimeout(()=>{
 
         navigate({
-          to:"/student",
+          to: isTeacher ? "/teacher" : "/student",
         });
 
-      },1200);
+      },900);
 
 
 
@@ -141,6 +114,7 @@ function LoginPage() {
 
 
       setError(
+        err.response?.data?.error ||
         err.message ||
         "Something went wrong"
       );

@@ -9,7 +9,11 @@ const lessonSchema = new Schema(
     title: { type: String, required: true },
     description: { type: String },
 
-    videoUrl: { type: String }, // storage URL (e.g. S3/Bunny/Mux) for the lesson video
+    // Lessons are hosted on YouTube: the teacher pastes a link, we store the
+    // canonical watch URL plus the extracted id so the player can embed it
+    // without re-parsing on every render.
+    videoUrl: { type: String },
+    youtubeVideoId: { type: String },
     videoDurationSeconds: { type: Number },
 
     // Resources attached directly to this lesson (in addition to the general Resource library)
@@ -20,7 +24,7 @@ const lessonSchema = new Schema(
     ],
 
     order: { type: Number, default: 0 },
-    isPublished: { type: Boolean, default: false },
+    isPublished: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

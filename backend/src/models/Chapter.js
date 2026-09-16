@@ -8,7 +8,7 @@ const chapterSchema = new Schema(
     description: { type: String },
     learningObjectives: [{ type: String }],
     order: { type: Number, default: 0 }, // controls reordering within a course
-    isPublished: { type: Boolean, default: false },
+    isPublished: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

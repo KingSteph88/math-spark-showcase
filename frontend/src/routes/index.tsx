@@ -47,19 +47,6 @@ const packs = [
     popular: false,
   },
   {
-    id: "Analysis-only",
-    title: "Starter Pack",
-    price: "40 TND",
-    description:
-      "Perfect for students who want structured revision.",
-    features: [
-      "Analysis lessons",
-      "PDF summaries",
-      "Exercise corrections",
-    ],
-    popular: false,
-  },
-  {
     id: "algebra-analysis-combo",
     title: "Premium Pack",
     price: "70 TND",
@@ -73,6 +60,20 @@ const packs = [
     ],
     popular: true,
   },
+  {
+    id: "Analysis-only",
+    title: "Starter Pack",
+    price: "40 TND",
+    description:
+      "Perfect for students who want structured revision.",
+    features: [
+      "Analysis lessons",
+      "PDF summaries",
+      "Exercise corrections",
+    ],
+    popular: false,
+  },
+  
 ];
 
 function Landing() {
@@ -120,7 +121,7 @@ function Landing() {
             <ArrowRight className="size-4 group-hover:translate-x-0.5 transition" />
           </Link>
           <Link
-            to="/student/schedule"
+            to="/student/exam-prep"
             className="inline-flex items-center gap-2 rounded-full glass-card px-7 py-3.5 font-medium hover-lift"
           >
             <Radio className="size-4 text-coral" /> Join Live Sessions
@@ -167,11 +168,8 @@ function Landing() {
         </div>
       </section>
 
-      {/* packs */}
-      <section
-  id="packs"
-  className="mx-auto max-w-7xl px-6 py-20"
->
+{/* Packs */}
+<section id="packs" className="mx-auto max-w-7xl px-6 py-20">
   <div className="text-center max-w-2xl mx-auto mb-12">
     <h2 className="text-4xl font-bold">
       Choose your learning pack
@@ -182,103 +180,114 @@ function Landing() {
     </p>
   </div>
 
-
-  <div className="grid md:grid-cols-2 gap-8">
+  <div className="grid md:grid-cols-3 gap-6 items-stretch">
 
     {packs.map((pack) => (
-
       <div
         key={pack.id}
         className={`
-          glass-card rounded-[2rem] p-8 hover-lift
+          relative rounded-[2rem] p-8 transition-all duration-300
           ${
             pack.popular
-              ? "ring-2 ring-orange-300"
-              : ""
+              ? `
+                bg-gradient-to-br from-orange-400 via-rose-400 to-pink-500
+                text-white
+                scale-[1.04]
+                shadow-[0_20px_60px_rgba(244,114,182,0.35)]
+                ring-2 ring-white/70
+                z-10
+              `
+              : `
+                glass-card
+                hover-lift
+              `
           }
         `}
       >
 
-        {
-          pack.popular && (
-            <div className="
-              inline-flex
-              px-3 py-1
-              rounded-full
-              bg-warm-gradient
-              text-white
-              text-xs
-              mb-4
-            ">
-              Most Popular
-            </div>
-          )
-        }
+        {/* Popular badge */}
+        {pack.popular && (
+          <div className="
+            absolute
+            -top-4
+            left-1/2
+            -translate-x-1/2
+            px-5
+            py-1.5
+            rounded-full
+            bg-white
+            text-orange-500
+            text-xs
+            font-bold
+            shadow-lg
+            whitespace-nowrap
+          ">
+            MOST POPULAR
+          </div>
+        )}
 
-
-        <h3 className="
-          text-3xl
-          font-display
-          font-semibold
-        ">
+        <h3
+          className={`
+            text-3xl
+            font-display
+            font-semibold
+            ${pack.popular ? "text-white" : ""}
+          `}
+        >
           {pack.title}
         </h3>
 
-
-        <div className="
-          text-4xl
-          font-bold
-          mt-4
-        ">
+        <div
+          className={`
+            text-4xl
+            font-bold
+            mt-4
+            ${pack.popular ? "text-white" : ""}
+          `}
+        >
           {pack.price}
         </div>
 
-
-        <p className="
-          mt-3
-          text-muted-foreground
-        ">
+        <p
+          className={`
+            mt-3
+            ${pack.popular ? "text-white/85" : "text-muted-foreground"}
+          `}
+        >
           {pack.description}
         </p>
 
-
         <ul className="mt-6 space-y-3">
-
-          {pack.features.map((feature)=>(
+          {pack.features.map((feature) => (
             <li
               key={feature}
-              className="
+              className={`
                 flex
                 items-center
                 gap-2
                 text-sm
-              "
+                ${pack.popular ? "text-white/95" : ""}
+              `}
             >
-
               <Sparkles
-                className="
+                className={`
                   size-4
-                  text-coral
-                "
+                  shrink-0
+                  ${pack.popular ? "text-yellow-200" : "text-coral"}
+                `}
               />
 
               {feature}
-
             </li>
           ))}
-
         </ul>
 
-
         <Link
-
           to="/register"
-
           search={{
-            plan: pack.id
+            plan: pack.id,
           }}
-
-          className="
+          className={`
             mt-8
             inline-flex
             items-center
@@ -286,31 +295,38 @@ function Landing() {
             gap-2
             w-full
             rounded-full
-            bg-warm-gradient
-            text-white
             px-6
             py-3
             font-medium
-            shadow-glow
-            hover:opacity-95
             transition
-          "
+            ${
+              pack.popular
+                ? `
+                  bg-white
+                  text-orange-500
+                  shadow-lg
+                  hover:bg-orange-50
+                `
+                : `
+                  bg-warm-gradient
+                  text-white
+                  shadow-glow
+                  hover:opacity-95
+                `
+            }
+          `}
         >
-
           Choose this pack
 
-          <ArrowRight className="size-4"/>
-
+          <ArrowRight className="size-4" />
         </Link>
 
-
       </div>
-
     ))}
 
   </div>
-
 </section>
+
 
       <SiteFooter />
     </div>

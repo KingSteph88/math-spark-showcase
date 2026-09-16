@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronDown, Plus, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { teacherApi } from "@/lib/teacherApi";
@@ -7,7 +7,23 @@ export const Route = createFileRoute("/teacher/courses")({
   component: TeacherCourses,
 });
 
-type Course = { _id: string; title: string; slug: string; description?: string; isPublished: boolean };
+type Subject = "analysis" | "algebra";
+
+type Course = {
+  _id: string;
+  title: string;
+  slug: string;
+  subject: Subject;
+  description?: string;
+  isPublished: boolean;
+};
+
+// Which branch a course belongs to decides who can see it: a student on
+// the analysis-only plan never sees algebra courses, and vice versa.
+const SUBJECTS: { value: Subject; label: string }[] = [
+  { value: "analysis", label: "Analysis" },
+  { value: "algebra", label: "Algebra" },
+];
 type Chapter = { _id: string; title: string; description?: string; isPublished: boolean };
 
 function slugify(title: string) {
@@ -21,6 +37,8 @@ function TeacherCourses() {
   const [loading, setLoading] = useState(true);
 
   const [newCourseTitle, setNewCourseTitle] = useState("");
+  const [newCourseSubject, setNewCourseSubject] = useState<Subject>("analysis");
+  const [courseError, setCourseError] = useState("");
   const [newChapterTitle, setNewChapterTitle] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -54,12 +72,19 @@ function TeacherCourses() {
   async function createCourse(e: React.FormEvent) {
     e.preventDefault();
     if (!newCourseTitle.trim()) return;
-    await teacherApi.post("/teacher/courses", {
-      title: newCourseTitle,
-      slug: slugify(newCourseTitle),
-    });
-    setNewCourseTitle("");
-    loadCourses();
+    setCourseError("");
+
+    try {
+      await teacherApi.post("/teacher/courses", {
+        title: newCourseTitle,
+        slug: slugify(newCourseTitle),
+        subject: newCourseSubject,
+      });
+      setNewCourseTitle("");
+      loadCourses();
+    } catch (err: any) {
+      setCourseError(err.response?.data?.error || "Could not create that course.");
+    }
   }
 
   async function createChapter(courseId: string, e: React.FormEvent) {
@@ -92,13 +117,28 @@ function TeacherCourses() {
         <p className="mt-2 text-muted-foreground">Manage every subject and its chapters.</p>
       </div>
 
-      <form onSubmit={createCourse} className="glass-card rounded-3xl p-6 flex gap-3">
+      {courseError && (
+        <div className="rounded-2xl bg-red-100 text-red-700 px-5 py-3 text-sm">{courseError}</div>
+      )}
+
+      <form onSubmit={createCourse} className="glass-card rounded-3xl p-6 flex flex-wrap gap-3">
         <input
           placeholder="New course title (e.g. Algèbre 1)"
           value={newCourseTitle}
           onChange={(e) => setNewCourseTitle(e.target.value)}
-          className="flex-1 px-5 py-3 rounded-2xl bg-white/70 border border-border focus:outline-none focus:ring-2 focus:ring-ring"
+          className="flex-1 min-w-[16rem] px-5 py-3 rounded-2xl bg-white/70 border border-border focus:outline-none focus:ring-2 focus:ring-ring"
         />
+        <select
+          value={newCourseSubject}
+          onChange={(e) => setNewCourseSubject(e.target.value as Subject)}
+          className="px-5 py-3 rounded-2xl bg-white/70 border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+        >
+          {SUBJECTS.map((s) => (
+            <option key={s.value} value={s.value}>
+              {s.label}
+            </option>
+          ))}
+        </select>
         <button className="rounded-full bg-warm-gradient text-white px-5 py-3 text-sm font-medium shadow-soft inline-flex items-center gap-2">
           <Plus className="size-4" /> Add course
         </button>
@@ -118,7 +158,11 @@ function TeacherCourses() {
                   <div className="size-12 rounded-2xl bg-gradient-to-br from-orange-200 to-pink-200 shadow-soft" />
                   <div>
                     <div className="font-display font-semibold text-lg">{course.title}</div>
-                    <div className="text-xs text-muted-foreground">{course.isPublished ? "Published" : "Draft"}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {SUBJECTS.find((s) => s.value === course.subject)?.label ?? course.subject}
+                      {" · "}
+                      {course.isPublished ? "Published" : "Draft"}
+                    </div>
                   </div>
                 </div>
                 <ChevronDown className={`size-5 text-muted-foreground transition ${isOpen ? "rotate-180" : ""}`} />
@@ -136,9 +180,18 @@ function TeacherCourses() {
                   </div>
 
                   {chapters.map((ch) => (
-                    <div key={ch._id} className="glass-panel rounded-2xl p-5">
-                      <div className="font-semibold">{ch.title}</div>
-                      {ch.description && <div className="text-xs text-muted-foreground mt-1">{ch.description}</div>}
+                    <div key={ch._id} className="glass-panel rounded-2xl p-5 flex items-center justify-between gap-4">
+                      <div>
+                        <div className="font-semibold">{ch.title}</div>
+                        {ch.description && <div className="text-xs text-muted-foreground mt-1">{ch.description}</div>}
+                      </div>
+                      <Link
+                        to="/teacher/chapters/$chapterId"
+                        params={{ chapterId: ch._id }}
+                        className="shrink-0 text-xs font-medium rounded-full bg-white px-4 py-2 shadow-soft hover:bg-secondary transition"
+                      >
+                        Manage lessons
+                      </Link>
                     </div>
                   ))}
 

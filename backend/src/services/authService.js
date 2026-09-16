@@ -1,4 +1,4 @@
-const { User, PaymentPlan } = require('../models');
+const { User, Teacher, PaymentPlan } = require('../models');
 const { hashPassword, comparePassword } = require('../utils/password');
 const { signAccessToken, generateRawToken, hashToken } = require('../utils/tokens');
 const { sendEmail, verificationEmail, passwordResetEmail } = require('../utils/email');
@@ -94,8 +94,66 @@ const STATUS_MESSAGES = {
     'Your subscription has expired.',
 };
 
+function toPublicTeacher(teacher) {
+  return {
+    id: teacher._id,
+    firstName: teacher.firstName,
+    lastName: teacher.lastName,
+    email: teacher.email,
+    role: teacher.role,
+    status: teacher.status,
+  };
+}
+
+/**
+ * SINGLE login for the whole platform.
+ *
+ * Teachers and students share one form and one endpoint. We look in the
+ * Teacher collection first: if the address belongs to a teacher/admin we
+ * issue a teacher token, otherwise we fall through to the student flow.
+ * The response carries `accountType` so the client knows whether to land
+ * on the teacher studio or the student platform.
+ */
 async function login({ email, password }, meta = {}) {
-  const user = await User.findOne({ email: email.toLowerCase() });
+  const normalizedEmail = email.toLowerCase();
+
+  const teacher = await Teacher.findOne({ email: normalizedEmail });
+
+  if (teacher) {
+    const validPassword = await comparePassword(password, teacher.passwordHash);
+    if (!validPassword) throw httpError('Invalid email or password', 401);
+
+    if (teacher.status !== 'active') {
+      throw httpError('This account has been suspended', 403);
+    }
+
+    teacher.lastLoginAt = new Date();
+    await teacher.save();
+
+    const accessToken = signAccessToken({
+      sub: teacher._id.toString(),
+      role: teacher.role,
+      accountType: 'teacher',
+    });
+
+    const refreshToken = await issueRefreshToken(
+      { userId: teacher._id, userType: 'Teacher' },
+      meta
+    );
+
+    const publicTeacher = toPublicTeacher(teacher);
+
+    return {
+      accountType: 'teacher',
+      accessToken,
+      refreshToken,
+      user: publicTeacher,
+      // kept so the existing teacher client keeps working unchanged
+      teacher: publicTeacher,
+    };
+  }
+
+  const user = await User.findOne({ email: normalizedEmail });
   if (!user) throw httpError('Invalid email or password', 401);
 
   const validPassword = await comparePassword(password, user.passwordHash);
@@ -123,7 +181,12 @@ async function login({ email, password }, meta = {}) {
     meta
   );
 
-  return { accessToken, refreshToken, user: toPublicUser(user) };
+  return {
+    accountType: 'student',
+    accessToken,
+    refreshToken,
+    user: toPublicUser(user),
+  };
 }
 
 async function refreshAccessToken(rawToken, meta = {}) {
@@ -137,6 +200,26 @@ async function refreshAccessToken(rawToken, meta = {}) {
     );
   }
 
+  // A refresh token records which collection it belongs to, so the same
+  // endpoint can refresh a teacher or a student session.
+  if (rotated.stored.userType === 'Teacher') {
+    const teacher = await Teacher.findById(rotated.stored.userId);
+
+    if (!teacher || teacher.status !== 'active') {
+      throw httpError('Account is not active', 403);
+    }
+
+    return {
+      accountType: 'teacher',
+      accessToken: signAccessToken({
+        sub: teacher._id.toString(),
+        role: teacher.role,
+        accountType: 'teacher',
+      }),
+      refreshToken: rotated.refreshToken,
+    };
+  }
+
   const accessToken = signAccessToken({
     sub: rotated.stored.userId.toString(),
     role: 'student',
@@ -144,6 +227,7 @@ async function refreshAccessToken(rawToken, meta = {}) {
 });
 
   return {
+    accountType: 'student',
     accessToken,
     refreshToken: rotated.refreshToken,
   };
@@ -191,6 +275,7 @@ async function resetPassword(rawToken, newPassword) {
 
 module.exports = {
   register,
+  toPublicTeacher,
   verifyEmail,
   login,
   refreshAccessToken,
