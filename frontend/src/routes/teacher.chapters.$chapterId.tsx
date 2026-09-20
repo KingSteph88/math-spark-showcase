@@ -99,7 +99,6 @@ function ChapterLessons() {
         typeof r.resourceId === "string" ? r.resourceId : r.resourceId._id
       ),
     });
-    setVideoFile(null);
     setShowForm(true);
   }
 

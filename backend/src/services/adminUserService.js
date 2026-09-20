@@ -89,7 +89,8 @@ async function approveUser(userId, adminId) {
 
   if (!plan) {
     throw httpError(
-      'Payment plan not found.',
+      `The plan this student selected (id: ${user.subscription.planId}) no longer exists ` +
+        `in Payment Plans. Assign them a valid plan before approving.`,
       404
     );
   }
@@ -171,7 +172,7 @@ async function suspendUser(userId, adminId) {
 }
 
 /**
- * Reactivate a suspended user.
+ * Reactivate a suspended or expired user.
  */
 async function activateUser(userId, adminId) {
 
@@ -184,11 +185,38 @@ async function activateUser(userId, adminId) {
     );
   }
 
-  if (user.status !== 'suspended') {
+  if (!['suspended', 'expired'].includes(user.status)) {
     throw httpError(
-      'Only suspended users can be activated.',
+      'Only suspended or expired accounts can be reactivated.',
       400
     );
+  }
+
+  if (user.status === 'expired') {
+    // An expired subscription's endDate has already passed, so just
+    // flipping status back to 'active' would leave the account exactly
+    // where the next sweep (src/jobs/expireSubscriptions.js) would
+    // immediately expire it again. Reactivating an expired account
+    // means starting a fresh subscription period off the student's
+    // existing plan — the same date math approveUser does for a
+    // brand-new student.
+    const plan = await PaymentPlan.findById(user.subscription.planId);
+
+    if (!plan) {
+      throw httpError(
+        `The plan this student was on (id: ${user.subscription.planId}) no longer exists ` +
+          `in Payment Plans. Assign them a valid plan before reactivating.`,
+        404
+      );
+    }
+
+    const startDate = new Date();
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + plan.durationDays);
+
+    user.subscription.status = 'active';
+    user.subscription.startDate = startDate;
+    user.subscription.endDate = endDate;
   }
 
   user.status = 'active';

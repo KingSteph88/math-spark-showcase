@@ -101,9 +101,38 @@ function passwordResetEmail(rawToken) {
   };
 }
 
+function subscriptionExpiredEmail(firstName) {
+  const link = `${process.env.APP_URL}/login`;
+
+  return {
+    subject: 'Your Mathéa subscription has ended',
+    html: `
+      <h2>Hello ${firstName},</h2>
+
+      <p>
+        Your subscription has reached its end date, so your account has
+        been paused. Your progress and data are safe and waiting for you.
+      </p>
+
+      <p>
+        Get in touch with your teacher to renew your plan. Once they
+        reactivate your account from their end, you'll be able to log
+        back in right away.
+      </p>
+
+      <a href="${link}">
+        Go to login
+      </a>
+
+      <p>If you have any questions, just reply to this email.</p>
+    `,
+  };
+}
+
 module.exports = {
   sendEmail,
   verificationEmail,
   passwordResetEmail,
-  approvalEmail
+  approvalEmail,
+  subscriptionExpiredEmail,
 };

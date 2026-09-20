@@ -63,6 +63,7 @@ function Schedule() {
   const [note, setNote] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [teacherFilter, setTeacherFilter] = useState<string>("");
 
   useEffect(() => {
     load();
@@ -71,6 +72,9 @@ function Schedule() {
   async function load() {
     setLoading(true);
     try {
+      // Fetched unfiltered so every teacher who has open slots stays in
+      // the dropdown below, regardless of which one is currently
+      // selected; the teacher filter itself is applied client-side.
       const [slotsRes, bookingsRes] = await Promise.all([
         api.get("/student/schedule/slots"),
         api.get("/student/schedule/bookings"),
@@ -119,8 +123,23 @@ function Schedule() {
     );
   }
 
+  // Every distinct teacher who currently has an open slot, for the filter
+  // dropdown below. Derived from the unfiltered slot list so a teacher
+  // never disappears from the options just because they're selected.
+  const teachers = Array.from(
+    new Map(
+      slots
+        .filter((s): s is Slot & { teacher: NonNullable<Slot["teacher"]> } => Boolean(s.teacher))
+        .map((s) => [s.teacher.id, s.teacher])
+    ).values()
+  );
+
+  const visibleSlots = teacherFilter
+    ? slots.filter((s) => s.teacher?.id === teacherFilter)
+    : slots;
+
   // Group open slots by calendar day so the list reads like a diary.
-  const slotsByDay = slots.reduce<Record<string, Slot[]>>((acc, slot) => {
+  const slotsByDay = visibleSlots.reduce<Record<string, Slot[]>>((acc, slot) => {
     const key = formatDay(slot.startTime);
     (acc[key] ||= []).push(slot);
     return acc;
@@ -211,11 +230,30 @@ function Schedule() {
 
       {/* ---------------- Available times ---------------- */}
       <section className="space-y-4">
-        <h2 className="text-xl font-display font-semibold">Available times</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-xl font-display font-semibold">Available times</h2>
 
-        {slots.length === 0 && (
+          {teachers.length > 0 && (
+            <select
+              value={teacherFilter}
+              onChange={(e) => setTeacherFilter(e.target.value)}
+              className="px-4 py-2.5 rounded-full bg-white/70 border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+            >
+              <option value="">All teachers</option>
+              {teachers.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.firstName} {t.lastName}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        {visibleSlots.length === 0 && (
           <div className="glass-card rounded-2xl p-8 text-center text-muted-foreground">
-            No open appointment slots right now. Check back soon.
+            {teacherFilter
+              ? "No open appointment slots with this teacher right now."
+              : "No open appointment slots right now. Check back soon."}
           </div>
         )}
 
@@ -237,6 +275,11 @@ function Schedule() {
                   }`}
                 >
                   {formatTime(slot.startTime)} – {formatTime(slot.endTime)}
+                  {slot.teacher && !teacherFilter && (
+                    <span className="block text-xs text-muted-foreground mt-0.5">
+                      {slot.teacher.firstName} {slot.teacher.lastName}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>

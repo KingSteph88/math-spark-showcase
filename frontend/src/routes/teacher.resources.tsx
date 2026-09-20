@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Upload, FileText, Trash2, Loader2 } from "lucide-react";
+import { Upload, FileText, Trash2, Loader2, Paperclip } from "lucide-react";
 import { useEffect, useState } from "react";
 import { teacherApi } from "@/lib/teacherApi";
 
@@ -104,8 +104,15 @@ function TeacherResources() {
           id="resource-file-input"
           type="file"
           onChange={(e) => setFile(e.target.files?.[0] || null)}
-          className="text-sm"
+          className="hidden"
         />
+        <label
+          htmlFor="resource-file-input"
+          className="cursor-pointer rounded-2xl border border-border bg-white/70 px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-white transition inline-flex items-center gap-2 max-w-[220px]"
+        >
+          <Paperclip className="size-4 shrink-0" />
+          <span className="truncate">{file ? file.name : "Choose file"}</span>
+        </label>
         <button
           disabled={uploading}
           className="rounded-full bg-warm-gradient text-white px-6 py-3 text-sm font-medium shadow-soft inline-flex items-center gap-2 disabled:opacity-50"

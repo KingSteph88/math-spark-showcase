@@ -1,7 +1,13 @@
 const { User, Teacher, PaymentPlan } = require('../models');
 const { hashPassword, comparePassword } = require('../utils/password');
 const { signAccessToken, generateRawToken, hashToken } = require('../utils/tokens');
-const { sendEmail, verificationEmail, passwordResetEmail } = require('../utils/email');
+const {
+  sendEmail,
+  verificationEmail,
+  passwordResetEmail,
+  subscriptionExpiredEmail,
+} = require('../utils/email');
+const { expireIfPastDue } = require('./subscriptionService');
 const {
   issueRefreshToken,
   rotateRefreshToken,
@@ -160,6 +166,16 @@ async function login({ email, password }, meta = {}) {
   if (!validPassword) throw httpError('Invalid email or password', 401);
 
   if (!user.emailVerified) throw httpError('Please verify your email before logging in', 403);
+
+  // A subscription that has quietly run past its endDate is caught here as
+  // a safety net (the scheduled job in subscriptionService normally flips
+  // this first), so a login attempt never slips through on a stale
+  // `status: 'active'` just because the nightly job hasn't run yet.
+  const justExpired = await expireIfPastDue(user);
+  if (justExpired) {
+    const { subject, html } = subscriptionExpiredEmail(user.firstName);
+    await sendEmail({ to: user.email, subject, html });
+  }
 
   if (user.status !== 'active') {
     throw httpError(STATUS_MESSAGES[user.status] || 'Account is not active', 403);
