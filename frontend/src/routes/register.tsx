@@ -29,9 +29,12 @@ function RegisterPage() {
 
   const [loading, setLoading] = useState(false);
   const [plansLoading, setPlansLoading] = useState(true);
+  const [resending, setResending] = useState(false);
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [registered, setRegistered] = useState(false);
+  const [emailSent, setEmailSent] = useState(true);
 
   useEffect(() => {
     async function fetchPlans() {
@@ -66,17 +69,37 @@ function RegisterPage() {
     setLoading(true);
 
     try {
-      await api.post("/auth/register", form);
+      const { data } = await api.post("/auth/register", form);
 
-      setSuccess("Account created! Check your email to verify your account.");
+      setSuccess(data.message || "Account created! Check your email to verify your account.");
+      setRegistered(true);
+      // The backend already tried to send the verification email; this
+      // tells us whether it actually went out so we know whether to
+      // offer a resend instead of blindly redirecting to login.
+      setEmailSent(data.emailSent !== false);
 
-      setTimeout(() => {
-        navigate({ to: "/login" });
-      }, 2500);
+      if (data.emailSent !== false) {
+        setTimeout(() => {
+          navigate({ to: "/login" });
+        }, 2500);
+      }
     } catch (err: any) {
       setError(err.response?.data?.error || err.message || "Something went wrong");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleResend() {
+    setError("");
+    setResending(true);
+    try {
+      const { data } = await api.post("/auth/resend-verification", { email: form.email });
+      setSuccess(data.message || "If that account is still awaiting verification, a new email has been sent.");
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.message || "Something went wrong");
+    } finally {
+      setResending(false);
     }
   }
 

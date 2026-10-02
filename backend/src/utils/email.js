@@ -3,7 +3,10 @@ const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: Number(process.env.EMAIL_PORT),
-  secure: false,
+  // Port 465 is implicit TLS and needs secure:true; 587/25 use STARTTLS
+  // and need secure:false. Hardcoding this to false silently breaks
+  // delivery for anyone using port 465 (a common provider default).
+  secure: Number(process.env.EMAIL_PORT) === 465,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,

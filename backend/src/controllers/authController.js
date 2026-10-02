@@ -8,10 +8,12 @@ function requestMeta(request) {
 }
 
 async function register(request, reply) {
-  const user = await authService.register(request.body);
+  const { emailSent, ...user } = await authService.register(request.body);
   return reply.code(201).send({
-    message:
-      'Account created. Check your email to verify your address, then complete payment to activate your account.',
+    message: emailSent
+      ? 'Account created. Check your email to verify your address, then complete payment to activate your account.'
+      : "Account created, but we couldn't send the verification email right now. Use \"Resend verification email\" to try again.",
+    emailSent,
     user,
   });
 }
@@ -117,6 +119,13 @@ async function resetPassword(request, reply) {
   return reply.send({ message: 'Password reset successfully. Please log in again.' });
 }
 
+async function resendVerification(request, reply) {
+  await authService.resendVerificationEmail(request.body.email);
+  return reply.send({
+    message: 'If that account is still awaiting verification, a new email has been sent.',
+  });
+}
+
 module.exports = {
   register,
   verifyEmail,
@@ -126,4 +135,5 @@ module.exports = {
   logout,
   forgotPassword,
   resetPassword,
+  resendVerification,
 };

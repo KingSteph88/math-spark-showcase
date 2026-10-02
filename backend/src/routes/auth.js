@@ -60,10 +60,19 @@ const resetPasswordSchema = {
   },
 };
 
+const resendVerificationSchema = {
+  body: {
+    type: 'object',
+    required: ['email'],
+    properties: { email: { type: 'string', format: 'email' } },
+  },
+};
+
 async function authRoutes(app) {
   app.post('/register', { schema: registerSchema }, authController.register);
   app.get('/verify-email',authController.verifyEmailLink);
   app.post('/verify-email', { schema: tokenBodySchema }, authController.verifyEmail);
+  app.post('/resend-verification', { schema: resendVerificationSchema }, authController.resendVerification);
   app.post('/login', { schema: loginSchema }, authController.login);
   app.post('/refresh', { schema: refreshTokenBodySchema }, authController.refresh);
   app.post('/logout', { schema: refreshTokenBodySchema }, authController.logout);

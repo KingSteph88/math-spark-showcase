@@ -62,9 +62,39 @@ async function register({ firstName, lastName, email, password, planId }) {
   });
 
   const { subject, html } = verificationEmail(rawToken);
-  await sendEmail({ to: user.email, subject, html });
 
-  return toPublicUser(user);
+  // The account is already saved at this point, so a flaky mail
+  // provider must never turn the whole request into a failure — that
+  // used to leave a real user in the DB while the frontend reported a
+  // connectivity error and the student had no way forward (their email
+  // was already taken, so re-registering failed too, and no
+  // verification email had gone out). Log it and let the frontend
+  // offer to resend instead.
+  let emailSent = true;
+  try {
+    await sendEmail({ to: user.email, subject, html });
+  } catch (err) {
+    emailSent = false;
+    console.error(`Failed to send verification email to ${user.email}:`, err.message);
+  }
+
+  return { ...toPublicUser(user), emailSent };
+}
+
+async function resendVerificationEmail(email) {
+  const user = await User.findOne({ email: email.toLowerCase() });
+
+  // Mirrors forgotPassword's guard: never reveal whether this address
+  // exists or what state the account is in.
+  if (!user || user.status !== 'pending_email_verification') return;
+
+  const rawToken = generateRawToken();
+  user.emailVerificationToken = hashToken(rawToken);
+  user.emailVerificationExpires = new Date(Date.now() + EMAIL_VERIFICATION_HOURS * 60 * 60 * 1000);
+  await user.save();
+
+  const { subject, html } = verificationEmail(rawToken);
+  await sendEmail({ to: user.email, subject, html });
 }
 
 async function verifyEmail(rawToken) {
@@ -291,6 +321,7 @@ async function resetPassword(rawToken, newPassword) {
 
 module.exports = {
   register,
+  resendVerificationEmail,
   toPublicTeacher,
   verifyEmail,
   login,
