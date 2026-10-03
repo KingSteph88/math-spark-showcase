@@ -25,7 +25,7 @@ function buildApp() {
     origin: [
       "http://localhost:8081",
       "http://localhost:5173",
-      "https://mathea-xp9s.onrender.com"
+      "https://mathea.space"
     ],
     methods: [
       'GET',
